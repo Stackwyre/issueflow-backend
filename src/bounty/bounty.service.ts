@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateBountyDto } from './dto/create-bounty.dto';
 import { UpdateBountyDto } from './dto/update-bounty.dto';
 import { ClaimBountyDto } from './dto/claim-bounty.dto';
@@ -10,13 +10,16 @@ export class BountyService {
 
   create(createBountyDto: CreateBountyDto): Bounty {
     const bounty: Bounty = {
-      id: Date.now().toString(),
-      ...createBountyDto,
+      id: Math.random().toString(36).substring(7),
+      title: createBountyDto.title,
+      description: createBountyDto.description,
+      reward: createBountyDto.reward,
       status: BountyStatus.OPEN,
-      claimedBy: null,
+      creatorId: createBountyDto.creatorId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
     this.bounties.push(bounty);
     return bounty;
   }
@@ -39,8 +42,13 @@ export class BountyService {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
 
+    const bounty = this.bounties[bountyIndex];
+    if (bounty.status !== BountyStatus.OPEN) {
+      throw new BadRequestException('Can only update open bounties');
+    }
+
     this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
+      ...bounty,
       ...updateBountyDto,
       updatedAt: new Date(),
     };
@@ -54,10 +62,16 @@ export class BountyService {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
 
+    const bounty = this.bounties[bountyIndex];
+    if (bounty.status !== BountyStatus.OPEN) {
+      throw new BadRequestException('Bounty is not available for claiming');
+    }
+
     this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
+      ...bounty,
       status: BountyStatus.IN_PROGRESS,
-      claimedBy: claimBountyDto.claimedBy,
+      claimantId: claimBountyDto.claimantId,
+      claimedAt: new Date(),
       updatedAt: new Date(),
     };
 
@@ -70,8 +84,13 @@ export class BountyService {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
 
+    const bounty = this.bounties[bountyIndex];
+    if (bounty.status === BountyStatus.COMPLETED) {
+      throw new BadRequestException('Cannot cancel completed bounty');
+    }
+
     this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
+      ...bounty,
       status: BountyStatus.CANCELLED,
       updatedAt: new Date(),
     };
@@ -85,9 +104,15 @@ export class BountyService {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
 
+    const bounty = this.bounties[bountyIndex];
+    if (bounty.status !== BountyStatus.IN_PROGRESS) {
+      throw new BadRequestException('Can only complete bounties in progress');
+    }
+
     this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
+      ...bounty,
       status: BountyStatus.COMPLETED,
+      completedAt: new Date(),
       updatedAt: new Date(),
     };
 
