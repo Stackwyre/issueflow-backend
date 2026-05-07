@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBountyDto } from './dto/create-bounty.dto';
 import { UpdateBountyDto } from './dto/update-bounty.dto';
 import { ClaimBountyDto } from './dto/claim-bounty.dto';
@@ -13,6 +13,7 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
+      claimantId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -37,7 +38,6 @@ export class BountyService {
     if (bountyIndex === -1) {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
-    
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       ...updateBountyDto,
@@ -48,41 +48,23 @@ export class BountyService {
 
   claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
     const bounty = this.findOne(id);
-    
-    if (bounty.status !== BountyStatus.OPEN) {
-      throw new BadRequestException('Bounty is not available for claiming');
-    }
-    
     bounty.status = BountyStatus.IN_PROGRESS;
-    bounty.assigneeId = claimBountyDto.assigneeId;
+    bounty.claimantId = claimBountyDto.claimantId;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 
   cancel(id: string): Bounty {
     const bounty = this.findOne(id);
-    
-    if (bounty.status === BountyStatus.COMPLETED) {
-      throw new BadRequestException('Cannot cancel a completed bounty');
-    }
-    
     bounty.status = BountyStatus.CANCELLED;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 
   complete(id: string): Bounty {
     const bounty = this.findOne(id);
-    
-    if (bounty.status !== BountyStatus.IN_PROGRESS) {
-      throw new BadRequestException('Bounty must be in progress to complete');
-    }
-    
     bounty.status = BountyStatus.COMPLETED;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 }
