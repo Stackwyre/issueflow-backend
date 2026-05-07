@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateBountyDto } from './dto/create-bounty.dto';
 import { UpdateBountyDto } from './dto/update-bounty.dto';
 import { ClaimBountyDto } from './dto/claim-bounty.dto';
@@ -13,7 +13,6 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
-      claimedBy: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -25,20 +24,15 @@ export class BountyService {
     return this.bounties;
   }
 
-  findOne(id: string): Bounty {
-    const bounty = this.bounties.find((b) => b.id === id);
-    if (!bounty) {
-      throw new NotFoundException(`Bounty with ID ${id} not found`);
-    }
-    return bounty;
+  findOne(id: string): Bounty | undefined {
+    return this.bounties.find((bounty) => bounty.id === id);
   }
 
-  update(id: string, updateBountyDto: UpdateBountyDto): Bounty {
-    const bountyIndex = this.bounties.findIndex((b) => b.id === id);
+  update(id: string, updateBountyDto: UpdateBountyDto): Bounty | undefined {
+    const bountyIndex = this.bounties.findIndex((bounty) => bounty.id === id);
     if (bountyIndex === -1) {
-      throw new NotFoundException(`Bounty with ID ${id} not found`);
+      return undefined;
     }
-
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       ...updateBountyDto,
@@ -47,23 +41,32 @@ export class BountyService {
     return this.bounties[bountyIndex];
   }
 
-  claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
+  claim(id: string, claimBountyDto: ClaimBountyDto): Bounty | undefined {
     const bounty = this.findOne(id);
+    if (!bounty || bounty.status !== BountyStatus.OPEN) {
+      return undefined;
+    }
     bounty.status = BountyStatus.IN_PROGRESS;
-    bounty.claimedBy = claimBountyDto.claimedBy;
+    bounty.claimantId = claimBountyDto.claimantId;
     bounty.updatedAt = new Date();
     return bounty;
   }
 
-  cancel(id: string): Bounty {
+  cancel(id: string): Bounty | undefined {
     const bounty = this.findOne(id);
+    if (!bounty) {
+      return undefined;
+    }
     bounty.status = BountyStatus.CANCELLED;
     bounty.updatedAt = new Date();
     return bounty;
   }
 
-  complete(id: string): Bounty {
+  complete(id: string): Bounty | undefined {
     const bounty = this.findOne(id);
+    if (!bounty || bounty.status !== BountyStatus.IN_PROGRESS) {
+      return undefined;
+    }
     bounty.status = BountyStatus.COMPLETED;
     bounty.updatedAt = new Date();
     return bounty;
