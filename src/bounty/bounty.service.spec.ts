@@ -10,18 +10,11 @@ describe('BountyService', () => {
     find: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BountyService,
-        {
-          provide: 'BountyRepository',
-          useValue: mockBountyRepository,
-        },
-      ],
+      providers: [BountyService],
     }).compile();
 
     service = module.get<BountyService>(BountyService);
