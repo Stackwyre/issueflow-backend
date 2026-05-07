@@ -40,7 +40,7 @@ export class BountyService {
 
     const bounty = this.bounties[bountyIndex];
     if (bounty.status !== BountyStatus.OPEN) {
-      throw new BadRequestException('Only open bounties can be updated');
+      throw new BadRequestException('Can only update open bounties');
     }
 
     this.bounties[bountyIndex] = {
@@ -59,13 +59,14 @@ export class BountyService {
 
     const bounty = this.bounties[bountyIndex];
     if (bounty.status !== BountyStatus.OPEN) {
-      throw new BadRequestException('Only open bounties can be claimed');
+      throw new BadRequestException('Bounty is not available for claiming');
     }
 
     this.bounties[bountyIndex] = {
       ...bounty,
       status: BountyStatus.IN_PROGRESS,
-      claimedBy: claimBountyDto.claimedBy,
+      claimantId: claimBountyDto.claimantId,
+      claimedAt: new Date(),
       updatedAt: new Date(),
     };
     return this.bounties[bountyIndex];
@@ -78,8 +79,8 @@ export class BountyService {
     }
 
     const bounty = this.bounties[bountyIndex];
-    if (bounty.status === BountyStatus.COMPLETED || bounty.status === BountyStatus.CANCELLED) {
-      throw new BadRequestException('Cannot cancel completed or already cancelled bounties');
+    if (bounty.status === BountyStatus.COMPLETED) {
+      throw new BadRequestException('Cannot cancel completed bounty');
     }
 
     this.bounties[bountyIndex] = {
@@ -98,13 +99,13 @@ export class BountyService {
 
     const bounty = this.bounties[bountyIndex];
     if (bounty.status !== BountyStatus.IN_PROGRESS) {
-      throw new BadRequestException('Only in-progress bounties can be completed');
+      throw new BadRequestException('Can only complete bounties that are in progress');
     }
 
     this.bounties[bountyIndex] = {
       ...bounty,
       status: BountyStatus.COMPLETED,
-      completedBy: bounty.claimedBy,
+      completedAt: new Date(),
       updatedAt: new Date(),
     };
     return this.bounties[bountyIndex];
