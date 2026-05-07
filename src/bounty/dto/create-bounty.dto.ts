@@ -16,5 +16,5 @@ export class CreateBountyDto {
 
   @IsNotEmpty()
   @IsString()
-  createdBy: string;
+  creatorId: string;
 }
