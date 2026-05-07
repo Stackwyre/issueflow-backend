@@ -9,13 +9,14 @@ export class BountyService {
   private bounties: Bounty[] = [];
 
   create(createBountyDto: CreateBountyDto): Bounty {
-    const bounty: Bounty = {
-      id: Math.random().toString(36).substring(7),
+    const bounty = {
+      id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    } as Bounty;
+
     this.bounties.push(bounty);
     return bounty;
   }
@@ -25,7 +26,7 @@ export class BountyService {
   }
 
   findOne(id: string): Bounty {
-    const bounty = this.bounties.find(b => b.id === id);
+    const bounty = this.bounties.find((b) => b.id === id);
     if (!bounty) {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
@@ -40,32 +41,45 @@ export class BountyService {
 
   claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
     const bounty = this.findOne(id);
+    
     if (bounty.status !== BountyStatus.OPEN) {
       throw new BadRequestException('Bounty is not available for claiming');
     }
+
     bounty.status = BountyStatus.IN_PROGRESS;
     bounty.claimedBy = claimBountyDto.claimedBy;
+    bounty.claimedAt = new Date();
     bounty.updatedAt = new Date();
+
     return bounty;
   }
 
   cancel(id: string): Bounty {
     const bounty = this.findOne(id);
+    
     if (bounty.status === BountyStatus.COMPLETED) {
       throw new BadRequestException('Cannot cancel a completed bounty');
     }
+
     bounty.status = BountyStatus.CANCELLED;
+    bounty.cancelledAt = new Date();
     bounty.updatedAt = new Date();
+
     return bounty;
   }
 
   complete(id: string): Bounty {
     const bounty = this.findOne(id);
+    
     if (bounty.status !== BountyStatus.IN_PROGRESS) {
-      throw new BadRequestException('Bounty must be in progress to complete');
+      throw new BadRequestException('Bounty must be in progress to be completed');
     }
+
     bounty.status = BountyStatus.COMPLETED;
+    bounty.completedBy = bounty.claimedBy;
+    bounty.completedAt = new Date();
     bounty.updatedAt = new Date();
+
     return bounty;
   }
 }
