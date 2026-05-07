@@ -45,4 +45,10 @@ export class Bounty {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  claimedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  completedAt: Date;
 }
