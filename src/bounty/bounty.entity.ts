@@ -40,6 +40,9 @@ export class Bounty {
   @Column({ nullable: true })
   claimedBy?: string;
 
+  @Column({ nullable: true })
+  completedBy?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
