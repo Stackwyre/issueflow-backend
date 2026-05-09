@@ -13,6 +13,7 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
+      claimedBy: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -24,50 +25,60 @@ export class BountyService {
     return this.bounties;
   }
 
-  findOne(id: string): Bounty {
+  findOne(id: string): Bounty | undefined {
     return this.bounties.find((bounty) => bounty.id === id);
   }
 
-  update(id: string, updateBountyDto: UpdateBountyDto): Bounty {
-    const index = this.bounties.findIndex((bounty) => bounty.id === id);
-    if (index !== -1) {
-      this.bounties[index] = {
-        ...this.bounties[index],
+  update(id: string, updateBountyDto: UpdateBountyDto): Bounty | undefined {
+    const bountyIndex = this.bounties.findIndex((bounty) => bounty.id === id);
+    if (bountyIndex !== -1) {
+      this.bounties[bountyIndex] = {
+        ...this.bounties[bountyIndex],
         ...updateBountyDto,
         updatedAt: new Date(),
       };
-      return this.bounties[index];
+      return this.bounties[bountyIndex];
     }
-    return null;
+    return undefined;
   }
 
-  claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
-    const bounty = this.findOne(id);
-    if (bounty && bounty.status === BountyStatus.OPEN) {
-      bounty.status = BountyStatus.IN_PROGRESS;
-      bounty.claimedBy = claimBountyDto.claimedBy;
-      bounty.claimedAt = new Date();
-      bounty.updatedAt = new Date();
+  claim(id: string, claimBountyDto: ClaimBountyDto): Bounty | undefined {
+    const bountyIndex = this.bounties.findIndex((bounty) => bounty.id === id);
+    if (bountyIndex !== -1) {
+      this.bounties[bountyIndex] = {
+        ...this.bounties[bountyIndex],
+        status: BountyStatus.IN_PROGRESS,
+        claimedBy: claimBountyDto.claimedBy,
+        updatedAt: new Date(),
+      };
+      return this.bounties[bountyIndex];
     }
-    return bounty;
+    return undefined;
   }
 
-  cancel(id: string): Bounty {
-    const bounty = this.findOne(id);
-    if (bounty) {
-      bounty.status = BountyStatus.CANCELLED;
-      bounty.updatedAt = new Date();
+  cancel(id: string): Bounty | undefined {
+    const bountyIndex = this.bounties.findIndex((bounty) => bounty.id === id);
+    if (bountyIndex !== -1) {
+      this.bounties[bountyIndex] = {
+        ...this.bounties[bountyIndex],
+        status: BountyStatus.CANCELLED,
+        updatedAt: new Date(),
+      };
+      return this.bounties[bountyIndex];
     }
-    return bounty;
+    return undefined;
   }
 
-  complete(id: string): Bounty {
-    const bounty = this.findOne(id);
-    if (bounty && bounty.status === BountyStatus.IN_PROGRESS) {
-      bounty.status = BountyStatus.COMPLETED;
-      bounty.completedAt = new Date();
-      bounty.updatedAt = new Date();
+  complete(id: string): Bounty | undefined {
+    const bountyIndex = this.bounties.findIndex((bounty) => bounty.id === id);
+    if (bountyIndex !== -1) {
+      this.bounties[bountyIndex] = {
+        ...this.bounties[bountyIndex],
+        status: BountyStatus.COMPLETED,
+        updatedAt: new Date(),
+      };
+      return this.bounties[bountyIndex];
     }
-    return bounty;
+    return undefined;
   }
 }
