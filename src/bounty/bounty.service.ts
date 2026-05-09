@@ -13,11 +13,8 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
-      claimedBy: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      claimedAt: null,
-      completedAt: null,
     };
     this.bounties.push(bounty);
     return bounty;
@@ -40,53 +37,44 @@ export class BountyService {
     if (bountyIndex === -1) {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
+
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       ...updateBountyDto,
       updatedAt: new Date(),
     };
+
     return this.bounties[bountyIndex];
   }
 
   claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
-    const bountyIndex = this.bounties.findIndex((b) => b.id === id);
-    if (bountyIndex === -1) {
-      throw new NotFoundException(`Bounty with ID ${id} not found`);
+    const bounty = this.findOne(id);
+    if (bounty.status !== BountyStatus.OPEN) {
+      throw new Error('Bounty is not available for claiming');
     }
-    this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
-      status: BountyStatus.IN_PROGRESS,
-      claimedBy: claimBountyDto.claimedBy,
-      claimedAt: new Date(),
-      updatedAt: new Date(),
-    };
-    return this.bounties[bountyIndex];
+
+    bounty.status = BountyStatus.IN_PROGRESS;
+    bounty.assigneeId = claimBountyDto.assigneeId;
+    bounty.updatedAt = new Date();
+
+    return bounty;
   }
 
   cancel(id: string): Bounty {
-    const bountyIndex = this.bounties.findIndex((b) => b.id === id);
-    if (bountyIndex === -1) {
-      throw new NotFoundException(`Bounty with ID ${id} not found`);
-    }
-    this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
-      status: BountyStatus.CANCELLED,
-      updatedAt: new Date(),
-    };
-    return this.bounties[bountyIndex];
+    const bounty = this.findOne(id);
+    bounty.status = BountyStatus.CANCELLED;
+    bounty.updatedAt = new Date();
+    return bounty;
   }
 
   complete(id: string): Bounty {
-    const bountyIndex = this.bounties.findIndex((b) => b.id === id);
-    if (bountyIndex === -1) {
-      throw new NotFoundException(`Bounty with ID ${id} not found`);
+    const bounty = this.findOne(id);
+    if (bounty.status !== BountyStatus.IN_PROGRESS) {
+      throw new Error('Bounty must be in progress to complete');
     }
-    this.bounties[bountyIndex] = {
-      ...this.bounties[bountyIndex],
-      status: BountyStatus.COMPLETED,
-      completedAt: new Date(),
-      updatedAt: new Date(),
-    };
-    return this.bounties[bountyIndex];
+
+    bounty.status = BountyStatus.COMPLETED;
+    bounty.updatedAt = new Date();
+    return bounty;
   }
 }
