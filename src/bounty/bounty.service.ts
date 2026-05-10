@@ -13,9 +13,11 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
-      claimedBy: null,
+      claimedById: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+      claimedAt: null,
+      completedAt: null,
     };
     this.bounties.push(bounty);
     return bounty;
@@ -38,6 +40,7 @@ export class BountyService {
     if (bountyIndex === -1) {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
+    
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       ...updateBountyDto,
@@ -48,11 +51,9 @@ export class BountyService {
 
   claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
     const bounty = this.findOne(id);
-    if (bounty.status !== BountyStatus.OPEN) {
-      throw new Error('Bounty is not available for claiming');
-    }
     bounty.status = BountyStatus.IN_PROGRESS;
-    bounty.claimedBy = claimBountyDto.claimedBy;
+    bounty.claimedById = claimBountyDto.claimedById;
+    bounty.claimedAt = new Date();
     bounty.updatedAt = new Date();
     return bounty;
   }
@@ -66,10 +67,8 @@ export class BountyService {
 
   complete(id: string): Bounty {
     const bounty = this.findOne(id);
-    if (bounty.status !== BountyStatus.IN_PROGRESS) {
-      throw new Error('Bounty must be in progress to complete');
-    }
     bounty.status = BountyStatus.COMPLETED;
+    bounty.completedAt = new Date();
     bounty.updatedAt = new Date();
     return bounty;
   }
