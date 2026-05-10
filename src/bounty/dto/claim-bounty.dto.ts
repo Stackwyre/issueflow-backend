@@ -1,7 +1,6 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class ClaimBountyDto {
-  @IsNotEmpty()
   @IsString()
-  assigneeId: string;
+  userId: string;
 }
