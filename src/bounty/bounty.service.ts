@@ -6,33 +6,26 @@ import { Bounty, BountyStatus } from './bounty.entity';
 
 @Injectable()
 export class BountyService {
-  private bounties: Map<string, Bounty> = new Map();
-  private counter = 1;
+  private bounties: Bounty[] = [];
 
   create(createBountyDto: CreateBountyDto): Bounty {
     const bounty: Bounty = {
-      id: this.counter.toString(),
-      title: createBountyDto.title,
-      description: createBountyDto.description,
-      amount: createBountyDto.amount,
+      id: Math.random().toString(36).substr(2, 9),
+      ...createBountyDto,
       status: BountyStatus.OPEN,
-      creatorId: createBountyDto.creatorId,
-      claimantId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-
-    this.bounties.set(bounty.id, bounty);
-    this.counter++;
+    this.bounties.push(bounty);
     return bounty;
   }
 
   findAll(): Bounty[] {
-    return Array.from(this.bounties.values());
+    return this.bounties;
   }
 
   findOne(id: string): Bounty {
-    const bounty = this.bounties.get(id);
+    const bounty = this.bounties.find((b) => b.id === id);
     if (!bounty) {
       throw new NotFoundException(`Bounty with ID ${id} not found`);
     }
@@ -41,54 +34,39 @@ export class BountyService {
 
   update(id: string, updateBountyDto: UpdateBountyDto): Bounty {
     const bounty = this.findOne(id);
-    
-    if (bounty.status !== BountyStatus.OPEN) {
-      throw new BadRequestException('Cannot update bounty that is not open');
-    }
-
     Object.assign(bounty, updateBountyDto);
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 
   claim(id: string, claimBountyDto: ClaimBountyDto): Bounty {
     const bounty = this.findOne(id);
-    
     if (bounty.status !== BountyStatus.OPEN) {
       throw new BadRequestException('Bounty is not available for claiming');
     }
-
     bounty.status = BountyStatus.IN_PROGRESS;
-    bounty.claimantId = claimBountyDto.claimantId;
+    bounty.claimedBy = claimBountyDto.claimedBy;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 
   cancel(id: string): Bounty {
     const bounty = this.findOne(id);
-    
-    if (bounty.status === BountyStatus.COMPLETED || bounty.status === BountyStatus.CANCELLED) {
-      throw new BadRequestException('Cannot cancel completed or already cancelled bounty');
+    if (bounty.status === BountyStatus.COMPLETED) {
+      throw new BadRequestException('Cannot cancel a completed bounty');
     }
-
     bounty.status = BountyStatus.CANCELLED;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 
   complete(id: string): Bounty {
     const bounty = this.findOne(id);
-    
     if (bounty.status !== BountyStatus.IN_PROGRESS) {
-      throw new BadRequestException('Can only complete bounties that are in progress');
+      throw new BadRequestException('Bounty must be in progress to complete');
     }
-
     bounty.status = BountyStatus.COMPLETED;
     bounty.updatedAt = new Date();
-    
     return bounty;
   }
 }
