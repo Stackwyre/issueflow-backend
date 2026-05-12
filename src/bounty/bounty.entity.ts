@@ -40,12 +40,24 @@ export class Bounty {
   @Column({ nullable: true })
   claimedBy: string;
 
-  @Column({ nullable: true })
-  claimedAt: Date;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  claimedAt: Date;
+
+  @Column({ nullable: true })
+  completedAt: Date;
+
+  @Column('text', { nullable: true })
+  requirements: string;
+
+  @Column({ nullable: true })
+  category: string;
+
+  @Column('simple-array', { nullable: true })
+  tags: string[];
 }
