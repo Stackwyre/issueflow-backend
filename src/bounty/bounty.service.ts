@@ -13,10 +13,11 @@ export class BountyService {
       id: Math.random().toString(36).substr(2, 9),
       ...createBountyDto,
       status: BountyStatus.OPEN,
-      claimedBy: null,
-      claimedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
+      claimedBy: null,
+      claimedAt: null,
+      completedAt: null,
     };
     this.bounties.push(bounty);
     return bounty;
@@ -55,7 +56,7 @@ export class BountyService {
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       status: BountyStatus.IN_PROGRESS,
-      claimedBy: claimBountyDto.userId,
+      claimedBy: claimBountyDto.claimedBy,
       claimedAt: new Date(),
       updatedAt: new Date(),
     };
@@ -83,6 +84,7 @@ export class BountyService {
     this.bounties[bountyIndex] = {
       ...this.bounties[bountyIndex],
       status: BountyStatus.COMPLETED,
+      completedAt: new Date(),
       updatedAt: new Date(),
     };
     return this.bounties[bountyIndex];
