@@ -4,7 +4,7 @@ import { BountyService } from './bounty.service';
 describe('BountyService', () => {
   let service: BountyService;
 
-  const mockRepository = {
+  const mockBountyRepository = {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
@@ -14,13 +14,7 @@ describe('BountyService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BountyService,
-        {
-          provide: 'BountyRepository',
-          useValue: mockRepository,
-        },
-      ],
+      providers: [BountyService],
     }).compile();
 
     service = module.get<BountyService>(BountyService);
