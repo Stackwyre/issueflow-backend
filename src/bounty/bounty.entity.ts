@@ -27,14 +27,18 @@ export class Bounty {
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ type: 'enum', enum: BountyStatus, default: BountyStatus.OPEN })
+  @Column({
+    type: 'enum',
+    enum: BountyStatus,
+    default: BountyStatus.OPEN,
+  })
   status: BountyStatus;
 
   @Column({ nullable: true })
-  creatorId: string;
+  claimedBy?: string;
 
-  @Column({ nullable: true })
-  claimantId: string;
+  @Column()
+  createdBy: string;
 
   @CreateDateColumn()
   createdAt: Date;
