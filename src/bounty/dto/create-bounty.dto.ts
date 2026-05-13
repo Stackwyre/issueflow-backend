@@ -1,19 +1,20 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsDateString, Min } from 'class-validator';
 
 export class CreateBountyDto {
   @IsString()
-  @IsNotEmpty()
   title: string;
 
   @IsString()
-  @IsNotEmpty()
   description: string;
 
   @IsNumber()
-  @IsPositive()
+  @Min(0)
   amount: number;
 
   @IsString()
-  @IsNotEmpty()
-  createdBy: string;
+  creatorId: string;
+
+  @IsOptional()
+  @IsDateString()
+  expiresAt?: Date;
 }
